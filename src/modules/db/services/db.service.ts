@@ -11,6 +11,7 @@ import {
   Album,
   Artist,
   DBInterface,
+  FavoritesRepsonse,
   Track,
   User,
 } from 'src/types';
@@ -53,6 +54,34 @@ export class DbService {
       throw new HttpException("Album with such id doesn't exist", 404);
     }
   }
+
+  private deleteFromTracksOrAlbums(
+    id: string,
+    entity: 'tracks' | 'albums',
+    type: 'artistId' | 'albumId',
+  ): void {
+    const tracksEntries = Object.entries(this.db[entity]).map((entry) => {
+      if (entry[1]?.[type] === id) {
+        entry[1][type] = null;
+      }
+      return entry;
+    });
+    this.db[entity] = Object.fromEntries(tracksEntries);
+  }
+
+  private deleteFromFavs(
+    id: string,
+    entity: 'albums' | 'artists' | 'tracks',
+  ): void {
+    const index = this.db.favorites[entity].findIndex((item) => item === id);
+    if (index === -1) {
+      return;
+    }
+    this.db.favorites[entity] = this.db.favorites[entity].filter(
+      (item) => item !== id,
+    );
+  }
+
   getUsers(): Omit<User, 'password'>[] {
     const users = Object.values(this.db.users).map((origUser) => {
       const user = { ...origUser };
@@ -138,6 +167,7 @@ export class DbService {
 
   deleteTrack(id: string): void {
     this.checkIfTrackExists(id);
+    this.deleteFromFavs(id, 'tracks');
     delete this.db.tracks[id];
   }
 
@@ -169,6 +199,9 @@ export class DbService {
 
   deleteArtist(id: string): void {
     this.checkIfArtistExists(id);
+    this.deleteFromTracksOrAlbums(id, 'tracks', 'artistId');
+    this.deleteFromTracksOrAlbums(id, 'albums', 'artistId');
+    this.deleteFromFavs(id, 'artists');
     delete this.db.artists[id];
   }
 
@@ -217,7 +250,95 @@ export class DbService {
 
   deleteAlbum(id: string): void {
     this.checkIfAlbumExists(id);
+    this.deleteFromTracksOrAlbums(id, 'tracks', 'albumId');
+    this.deleteFromFavs(id, 'albums');
     delete this.db.albums[id];
   }
 
+  getFavorites(): FavoritesRepsonse {
+    const {
+      albums: albumsIds,
+      artists: artistsIds,
+      tracks: tracksIds,
+    } = this.db.favorites;
+    const albums = Object.values(this.db.albums).reduce((acc, curr) => {
+      if (albumsIds.includes(curr.id)) {
+        acc.push(curr);
+      }
+      return acc;
+    }, []);
+    const artists = Object.values(this.db.artists).reduce((acc, curr) => {
+      if (artistsIds.includes(curr.id)) {
+        acc.push(curr);
+      }
+      return acc;
+    }, []);
+    const tracks = Object.values(this.db.tracks).reduce((acc, curr) => {
+      if (tracksIds.includes(curr.id)) {
+        acc.push(curr);
+      }
+      return acc;
+    }, []);
+    return { albums, artists, tracks };
+  }
+
+  addTrackToFavs(id: string): string {
+    try {
+      this.checkIfTrackExists(id);
+    } catch (error) {
+      throw new HttpException("Track with such id doesn't exist", 422);
+    }
+    this.db.favorites.tracks.push(id);
+    return 'Track has been successfully added to favorites';
+  }
+
+  deleteTrackFromFavs(id: string): void {
+    const index = this.db.favorites.tracks.findIndex((item) => item === id);
+    if (index === -1) {
+      throw new HttpException('Track is not in favorites', 404);
+    }
+    this.db.favorites.tracks = this.db.favorites.tracks.filter(
+      (item) => item !== id,
+    );
+  }
+
+  addAlbumToFavs(id: string): string {
+    try {
+      this.checkIfAlbumExists(id);
+    } catch (error) {
+      throw new HttpException("Album with such id doesn't exist", 422);
+    }
+    this.db.favorites.albums.push(id);
+    return 'Album has been successfully added to favorites';
+  }
+
+  deleteAlbumFromFavs(id: string): void {
+    const index = this.db.favorites.albums.findIndex((item) => item === id);
+    if (index === -1) {
+      throw new HttpException('Track is not in favorites', 404);
+    }
+    this.db.favorites.albums = this.db.favorites.albums.filter(
+      (item) => item !== id,
+    );
+  }
+
+  addArtistToFavs(id: string): string {
+    try {
+      this.checkIfArtistExists(id);
+    } catch (error) {
+      throw new HttpException("Artist with such id doesn't exist", 422);
+    }
+    this.db.favorites.artists.push(id);
+    return 'Artist has been successfully added to favorites';
+  }
+
+  deleteArtistFromFavs(id: string): void {
+    const index = this.db.favorites.artists.findIndex((item) => item === id);
+    if (index === -1) {
+      throw new HttpException('Artist is not in favorites', 404);
+    }
+    this.db.favorites.artists = this.db.favorites.artists.filter(
+      (item) => item !== id,
+    );
+  }
 }
