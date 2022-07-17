@@ -1,4 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { CreateAlbumDto } from 'src/modules/albums/dto/create-album.dto';
+import { UpdateAlbumDto } from 'src/modules/albums/dto/update-album.dto';
 import { CreateArtistDto } from 'src/modules/artists/dto/create-artist.dto';
 import { UpdateArtistDto } from 'src/modules/artists/dto/update-artist.dto';
 import { CreateTrackDto } from 'src/modules/tracks/dto/create-track.dto';
@@ -6,6 +8,7 @@ import { UpdateTrackDto } from 'src/modules/tracks/dto/update-track.dto';
 import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
 import { UpdatePasswordDto } from 'src/modules/users/dto/update-password.dto';
 import {
+  Album,
   Artist,
   DBInterface,
   Track,
@@ -42,6 +45,12 @@ export class DbService {
   private checkIfArtistExists(id: string): void {
     if (this.db.artists[id] === undefined) {
       throw new HttpException("Artist with such id doesn't exist", 404);
+    }
+  }
+
+  private checkIfAlbumExists(id: string): void {
+    if (this.db.albums[id] === undefined) {
+      throw new HttpException("Album with such id doesn't exist", 404);
     }
   }
   getUsers(): Omit<User, 'password'>[] {
@@ -161,6 +170,54 @@ export class DbService {
   deleteArtist(id: string): void {
     this.checkIfArtistExists(id);
     delete this.db.artists[id];
+  }
+
+  getAlbums(): Album[] {
+    return Object.values(this.db.albums);
+  }
+
+  getAlbum(id: string): Album {
+    this.checkIfAlbumExists(id);
+    return this.db.albums[id];
+  }
+
+  createAlbum(album: CreateAlbumDto): Album {
+    const id = v4();
+    const { artistId } = album;
+    try {
+      if (!!artistId) {
+        this.checkIfArtistExists(artistId);
+      }
+    } catch (error) {
+      throw new HttpException("Artist with such artistId doesn't exist", 404);
+    }
+    const newAlbum: Album = {
+      ...album,
+      id,
+      artistId,
+    };
+    this.db.albums[id] = newAlbum;
+    return newAlbum;
+  }
+
+  updateAlbum(id: string, payload: UpdateAlbumDto): Album {
+    this.checkIfAlbumExists(id);
+    const { artistId } = payload;
+    try {
+      if (!!artistId) {
+        this.checkIfArtistExists(artistId);
+      }
+    } catch (error) {
+      throw new HttpException("Artist with such artistId doesn't exist", 404);
+    }
+    const updatedArtist = { ...this.db.albums[id], ...payload };
+    this.db.albums[id] = updatedArtist;
+    return updatedArtist;
+  }
+
+  deleteAlbum(id: string): void {
+    this.checkIfAlbumExists(id);
+    delete this.db.albums[id];
   }
 
 }
