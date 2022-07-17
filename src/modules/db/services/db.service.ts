@@ -1,8 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { CreateTrackDto } from 'src/modules/tracks/dto/create-track.dto';
+import { UpdateTrackDto } from 'src/modules/tracks/dto/update-track.dto';
 import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
 import { UpdatePasswordDto } from 'src/modules/users/dto/update-password.dto';
 import {
   DBInterface,
+  Track,
   User,
 } from 'src/types';
 import { v4 } from 'uuid';
@@ -21,12 +24,17 @@ export class DbService {
     users: {},
   };
 
-  checkIfUserExists(id: string) {
+  private checkIfUserExists(id: string): void {
     if (this.db.users[id] === undefined) {
       throw new HttpException("User with such id doesn't exist", 404);
     }
   }
 
+  private checkIfTrackExists(id: string): void {
+    if (this.db.tracks[id] === undefined) {
+      throw new HttpException("Track with such id doesn't exist", 404);
+    }
+  }
   getUsers(): Omit<User, 'password'>[] {
     const users = Object.values(this.db.users).map((origUser) => {
       const user = { ...origUser };
@@ -82,4 +90,36 @@ export class DbService {
     delete this.db.users[id];
   }
 
+  getTracks(): Track[] {
+    return Object.values(this.db.tracks);
+  }
+
+  getTrack(id: string): Track {
+    this.checkIfTrackExists(id);
+    return this.db.tracks[id];
+  }
+
+  createTrack(track: CreateTrackDto): Track {
+    const id = v4();
+    const newTrack: Track = {
+      id,
+      ...track,
+      albumId: track.albumId ?? null,
+      artistId: track.artistId ?? null,
+    };
+    this.db.tracks[id] = newTrack;
+    return newTrack;
+  }
+
+  updateTrack(id: string, payload: UpdateTrackDto): Track {
+    this.checkIfTrackExists(id);
+    const updatedTrack = { ...this.db.tracks[id], ...payload };
+    this.db.tracks[id] = updatedTrack;
+    return updatedTrack;
+  }
+
+  deleteTrack(id: string): void {
+    this.checkIfTrackExists(id);
+    delete this.db.tracks[id];
+  }
 }
