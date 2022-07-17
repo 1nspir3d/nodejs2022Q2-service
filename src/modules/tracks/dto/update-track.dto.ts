@@ -1,11 +1,11 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateTrackDto {
   @IsString()
   @IsOptional()
   name?: string;
 
-  @IsString()
+  @IsNumber()
   @IsOptional()
   duration?: number;
 
