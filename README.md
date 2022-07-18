@@ -7,7 +7,7 @@
 ```
 git clone https://github.com/TanyaSamal/nodejs2022Q2-service
 cd nodejs2022Q2-service
-git checkout develop
+git checkout dev
 npm install
 ```
 
