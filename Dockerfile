@@ -8,6 +8,4 @@ RUN npm install -f
 
 COPY . .
 
-EXPOSE 4000
-
-RUN npm run build
+EXPOSE ${PORT}

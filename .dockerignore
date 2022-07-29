@@ -1,7 +1,9 @@
 node_modules
-.git
 Dockerfile
-.test
-.eslintrc.js
+test
+dist 
+.vscode
+.git
 .gitignore
 .prettierrc
+.eslintrc.json
