@@ -39,11 +39,3 @@ export interface FavoritesRepsonse {
   albums: Album[];
   tracks: Track[];
 }
-
-export interface DBInterface {
-  users: Record<string, User>;
-  artists: Record<string, Artist>;
-  tracks: Record<string, Track>;
-  albums: Record<string, Album>;
-  favorites: Favorites;
-}
