@@ -1,30 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { DbService } from 'src/modules/db/services/db.service';
+import { HttpException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Album } from 'src/types';
+import { Repository } from 'typeorm';
 import { CreateAlbumDto } from '../dto/create-album.dto';
 import { UpdateAlbumDto } from '../dto/update-album.dto';
+import { AlbumEntity } from '../entities/album.entity';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class AlbumsService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    @InjectRepository(AlbumEntity)
+    private albumsRepository: Repository<AlbumEntity>,
+  ) {}
 
   async all(): Promise<Album[]> {
-    return this.dbService.getAlbums();
+    return await this.albumsRepository.find();
   }
 
   async get(id: string): Promise<Album> {
-    return this.dbService.getAlbum(id);
+    const result = await this.albumsRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (result) return result;
+
+    throw new HttpException("Album with such id doesn't exist", 404);
   }
 
   async create(payload: CreateAlbumDto): Promise<Album> {
-    return this.dbService.createAlbum(payload);
+    const createdAlbum = this.albumsRepository.create({
+      ...payload,
+      id: v4(),
+    });
+
+    return await this.albumsRepository.save(createdAlbum);
   }
 
   async update(id: string, payload: UpdateAlbumDto): Promise<Album> {
-    return this.dbService.updateAlbum(id, payload);
+    const album = await this.get(id);
+
+    Object.assign(album, payload);
+
+    return await this.albumsRepository.save(album);
   }
 
   async delete(id: string): Promise<void> {
-    return this.dbService.deleteAlbum(id);
+    const result = await this.albumsRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new HttpException("Album with such id doesn't exist", 404);
+    }
   }
 }
