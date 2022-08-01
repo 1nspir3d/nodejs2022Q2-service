@@ -28,6 +28,3 @@ or
 ```
 npm run docker:scan:api
 ```
-
-After starting the app on port (4000 as default) you can open
-OpenAPI documentation in browser at http://localhost:4000/doc/.
