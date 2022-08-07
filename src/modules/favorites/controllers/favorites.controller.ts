@@ -14,34 +14,34 @@ export class FavoritesController {
 
   @Post('track/:id')
   async addTrack(@Param() params: IdDto): Promise<string> {
-    return await this.favsService.addTrack(params.id);
+    return await this.favsService.add(params.id, 'track');
   }
 
   @Delete('track/:id')
   @HttpCode(204)
   async deleteTrack(@Param() params: IdDto): Promise<void> {
-    return await this.favsService.deleteTrack(params.id);
+    return await this.favsService.delete(params.id, 'track');
   }
 
   @Post('album/:id')
   async addAlbum(@Param() params: IdDto): Promise<string> {
-    return await this.favsService.addAlbum(params.id);
+    return await this.favsService.add(params.id, 'album');
   }
 
   @Delete('album/:id')
   @HttpCode(204)
   async deleteAlbum(@Param() params: IdDto): Promise<void> {
-    return await this.favsService.deleteAlbum(params.id);
+    return await this.favsService.delete(params.id, 'album');
   }
 
   @Post('artist/:id')
   async addArtist(@Param() params: IdDto): Promise<string> {
-    return await this.favsService.addArtist(params.id);
+    return await this.favsService.add(params.id, 'artist');
   }
 
   @Delete('artist/:id')
   @HttpCode(204)
   async deleteArtist(@Param() params: IdDto): Promise<void> {
-    return await this.favsService.deleteArtist(params.id);
+    return await this.favsService.delete(params.id, 'artist');
   }
 }

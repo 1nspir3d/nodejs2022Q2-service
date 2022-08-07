@@ -1,33 +1,79 @@
-import { Injectable } from '@nestjs/common';
-import { DbService } from 'src/modules/db/services/db.service';
+import { HttpException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/types';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdatePasswordDto } from '../dto/update-password.dto';
+import { UserEntity } from '../entities/user.entity';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    @InjectRepository(UserEntity)
+    private userRepository: Repository<UserEntity>,
+  ) {}
 
   async all(): Promise<Omit<User, 'password'>[]> {
-    return this.dbService.getUsers();
+    const users = await this.userRepository.find();
+    return users.map((user) => user.toResponse());
   }
 
-  async get(id: string): Promise<Omit<User, 'password'>> {
-    return this.dbService.getUser(id);
+  async get(userId: string): Promise<Omit<User, 'password'>> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (user) return user.toResponse();
+    throw new HttpException("User with such id doesn't exist", 404);
   }
 
-  async create(payload: CreateUserDto): Promise<Omit<User, 'password'>> {
-    return this.dbService.createUser(payload);
+  async create(userDto: CreateUserDto): Promise<Omit<User, 'password'>> {
+    const id = v4();
+    const newUser = {
+      ...userDto,
+      id,
+      version: 1,
+    };
+    const createdUser = this.userRepository.create(newUser);
+    console.log('createdUser: ', createdUser);
+
+    return (await this.userRepository.save(createdUser)).toResponse();
   }
 
   async update(
     id: string,
     payload: UpdatePasswordDto,
   ): Promise<Omit<User, 'password'>> {
-    return this.dbService.updatePassword(id, payload);
+    const updatedUser = await this.userRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!updatedUser) {
+      throw new HttpException("User with such id doesn't exist", 404);
+    }
+
+    if (updatedUser.password !== payload.oldPassword) {
+      throw new HttpException('Old password is incorect', 403);
+    }
+
+    Object.assign(updatedUser, {
+      password: payload.newPassword,
+      version: updatedUser.version + 1,
+    });
+
+    return (await this.userRepository.save(updatedUser)).toResponse();
   }
 
   async delete(id: string): Promise<void> {
-    return this.dbService.deleteUser(id);
+    const result = await this.userRepository.delete(id);
+
+    if (result.affected === 0) {
+      throw new HttpException("User with such id doesn't exist", 404);
+    }
   }
 }
