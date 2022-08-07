@@ -6,6 +6,9 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "docker": "docker compose up -d",
+    "docker:scan:api": "docker scan nodejs2022q2-service_api",
+    "docker:scan:db": "docker scan postgres",
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
