@@ -25,6 +25,7 @@ Scanning built images:
 npm run docker:scan:db
 ```
 or
+
 ```
 npm run docker:scan:api
 ```
