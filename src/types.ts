@@ -39,3 +39,11 @@ export interface FavoritesRepsonse {
   albums: Album[];
   tracks: Track[];
 }
+
+export enum LogLevels {
+  log = 0,
+  error = 1,
+  warn = 2,
+  debug = 3,
+  verbose = 4,
+}
