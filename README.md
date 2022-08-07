@@ -1,8 +1,9 @@
 # Home Library Service
 
-# RSSchool PostgreSQL & ORM task
+# REST service: Authentication & Authorization
 
 ## Installation
+
 ```bash
 git clone https://github.com/1nspir3d/nodejs2022Q2-service
 cd nodejs2022Q2-service
@@ -24,6 +25,7 @@ Scanning built images:
 ```
 npm run docker:scan:db
 ```
+
 or
 
 ```
@@ -33,10 +35,13 @@ npm run docker:scan:api
 ## Tests
 
 Start tests in another terminal using commands:
+
 - all test cases
+
 ```
 npm run test
 ```
+
 - or individual
 
 ```
