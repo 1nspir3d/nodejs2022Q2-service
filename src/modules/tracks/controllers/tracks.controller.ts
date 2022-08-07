@@ -7,7 +7,9 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { IdDto } from 'src/modules/id.dto';
 import { Track } from 'src/types';
 import { CreateTrackDto } from '../dto/create-track.dto';
@@ -15,6 +17,7 @@ import { UpdateTrackDto } from '../dto/update-track.dto';
 import { TracksService } from '../services/tracks.service';
 
 @Controller('track')
+@UseGuards(AuthGuard('jwt'))
 export class TracksController {
   constructor(private readonly tracksService: TracksService) {}
 

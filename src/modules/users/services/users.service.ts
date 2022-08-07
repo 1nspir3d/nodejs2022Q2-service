@@ -19,6 +19,11 @@ export class UsersService {
     return users.map((user) => user.toResponse());
   }
 
+  async getAllUsersWithPassword() {
+    const users = await this.userRepository.find();
+    return users;
+  }
+
   async get(userId: string): Promise<Omit<User, 'password'>> {
     const user = await this.userRepository.findOne({
       where: {

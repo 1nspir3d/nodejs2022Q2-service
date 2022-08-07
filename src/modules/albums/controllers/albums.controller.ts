@@ -7,7 +7,9 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { IdDto } from 'src/modules/id.dto';
 import { Album } from 'src/types';
 import { CreateAlbumDto } from '../dto/create-album.dto';
@@ -15,6 +17,7 @@ import { UpdateAlbumDto } from '../dto/update-album.dto';
 import { AlbumsService } from '../services/albums.service';
 
 @Controller('album')
+@UseGuards(AuthGuard('jwt'))
 export class AlbumsController {
   constructor(private readonly albumsService: AlbumsService) {}
 

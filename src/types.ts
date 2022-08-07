@@ -47,3 +47,8 @@ export enum LogLevels {
   debug = 3,
   verbose = 4,
 }
+
+export type Tokens = {
+  accessToken: string;
+  refreshToken: string;
+};

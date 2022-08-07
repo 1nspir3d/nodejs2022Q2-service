@@ -9,6 +9,7 @@ import configOptions from './ormconfig';
 import { LoggerMiddleware } from './core/logger.middleware';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './core/http-exception.filter';
+import { AuthModule } from './modules/auth/auth.module';
 @Module({
   imports: [
     UsersModule,
@@ -17,6 +18,7 @@ import { HttpExceptionFilter } from './core/http-exception.filter';
     AlbumsModule,
     FavoritesModule,
     TypeOrmModule.forRoot(configOptions),
+    AuthModule,
   ],
   providers: [
     {
